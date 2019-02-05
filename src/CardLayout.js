@@ -90,7 +90,7 @@ class CardLayout extends Component {
                             firstFlippedImage: "",
                             secondFlippedImage: ""
                         })
-                    }, 300);
+                    }, 500);
                 }
                 else {
                     successCount++;
