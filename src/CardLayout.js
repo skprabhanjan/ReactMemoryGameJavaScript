@@ -94,6 +94,16 @@ class CardLayout extends Component {
                 }
                 else {
                     successCount++;
+                    let history = localStorage.getItem("completedItems");
+                    let newValue = Math.min(this.state.firstFlippedImage, this.state.secondFlippedImage).toString();
+                    let updatedValue;
+                    if (history === null) {
+                        updatedValue = newValue;
+                    }
+                    else {
+                        updatedValue = history + "," + newValue;
+                    }
+                    localStorage.setItem("completedItems", updatedValue);
                     let tempArray = [];
                     for (let i = 0; i < successCount; i++) {
                         tempArray.push(<StarComplete className="center" />);
@@ -113,6 +123,7 @@ class CardLayout extends Component {
                             this.setState({
                                 open: true
                             }, function () {
+                                localStorage.removeItem("timer");
                                 clearInterval(this.state.timerId);
                             })
                         }
@@ -155,6 +166,22 @@ class CardLayout extends Component {
         })
     }
 
+    handleContinueGameProgress = (count) => {
+        let tempArray = [];
+        for (let i = 0; i < count; i++) {
+            tempArray.push(<StarComplete className="center" />);
+        }
+
+        for (let i = count; i < this.state.progress.length; i++) {
+            tempArray.push(<StarInComplete className="center" />);
+        }
+        this.setState({
+            progress: tempArray
+        });
+        successCount = count;
+
+    }
+
 
     render() {
         return (
@@ -168,7 +195,7 @@ class CardLayout extends Component {
 
                 {this.state.startGame && (
                     <div id="cardGame">
-                        <Timer style={styles.timer} setTimerId={this.setTimerId} /> <br />
+                        <Timer style={styles.timer} setTimerId={this.setTimerId} flipImageHelper={this.flipImage} handleContinueGameProgress={this.handleContinueGameProgress} /> <br />
                         {this.state.progress.map(value => {
                             return value;
                         })}

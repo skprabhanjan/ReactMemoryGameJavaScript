@@ -16,10 +16,25 @@ const styles = {
 class Timer extends Component {
     constructor(props) {
         super(props);
-        this.state = { secondsRemaining: 30, colorToBeShown: "black", open: false, };
+        this.state = {
+            secondsRemaining: 30, colorToBeShown: "black", open: false,
+            gameContinuePopUp: false
+        };
     }
 
     componentDidMount = () => {
+        if (!localStorage.getItem("timer")) {
+            localStorage.setItem("timer", this.state.secondsRemaining.toString());
+            this.startTimer();
+        }
+        else {
+            this.setState({
+                gameContinuePopUp: true
+            })
+        }
+    }
+
+    startTimer = () => {
         const context = this;
         let timer = setInterval(function () {
             if (context.state.secondsRemaining > 0) {
@@ -30,10 +45,13 @@ class Timer extends Component {
                 }
                 context.setState({
                     secondsRemaining: context.state.secondsRemaining - 1
+                }, function () {
+                    localStorage.setItem("timer", context.state.secondsRemaining.toString());
                 })
             }
             else {
                 clearInterval(timer);
+                localStorage.removeItem("timer");
                 context.setState({
                     open: true
                 })
@@ -42,6 +60,7 @@ class Timer extends Component {
         this.props.setTimerId(timer);
     }
 
+
     handleClose = () => {
         this.setState({ open: false });
     };
@@ -49,6 +68,36 @@ class Timer extends Component {
     tryAgain = () => {
         window.location.reload();
     }
+
+    startNewGame = () => {
+        this.setState({
+            secondsRemaining: this.state.secondsRemaining,
+            gameContinuePopUp: false
+        }, function () {
+            localStorage.removeItem("completedItems");
+            this.startTimer();
+        })
+    }
+
+    contiueGame = () => {
+        this.setState({
+            secondsRemaining: localStorage.getItem("timer"),
+            gameContinuePopUp: false
+        }, function () {
+            let completedItems = localStorage.getItem('completedItems');
+            if (completedItems !== null) {
+                (completedItems.split(',')).forEach(element => {
+                    this.props.flipImageHelper(+element);
+                    this.props.flipImageHelper(+element + 8);
+                });
+                this.props.handleContinueGameProgress(completedItems.split(',').length);
+            }
+            this.startTimer();
+        })
+    }
+
+
+
 
     render() {
         return (
@@ -71,6 +120,25 @@ class Timer extends Component {
                          </Button>
                         <Button onClick={this.handleClose} color="primary" autoFocus>
                             Close
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog
+                    open={this.state.gameContinuePopUp}
+                    aria-labelledby="responsive-dialog-title"
+                >
+                    <DialogTitle id="responsive-dialog-title">{"Game in Progress!!!!"}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            There is already a game in progress , Do you wish you continue ?
+                            </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.contiueGame} color="primary">
+                            Yes
+                         </Button>
+                        <Button onClick={this.startNewGame} color="primary" autoFocus>
+                            Nope
                         </Button>
                     </DialogActions>
                 </Dialog>
